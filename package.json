@@ -20,6 +20,10 @@
   },
   "dependencies": {
     "mbjs-generic-api": "^0.5.2",
-    "mbjs-utils": "0.0.6"
+    "mbjs-utils": "0.0.6",
+    "minio": "^7.0.5",
+    "mongodb": "^3.1.13",
+    "mz": "^2.7.0",
+    "nedb": "^1.8.0"
   }
 }
