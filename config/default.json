@@ -2,6 +2,7 @@
   "api": {
     "uriBase": "http://id.motionbank.org",
     "apiHost": "https://api.motionbank.org",
+    "transcoderHost": "https://transcoder.motionbank.org",
     "auth0AppMetadataPrefix": "https://app.motionbank.org/app_metadata/"
   },
   "http": {
@@ -9,6 +10,7 @@
     "port": 9191
   },
   "assets": {
+    "packagesBucket": "packages",
     "host": null,
     "client": {
       "endPoint": "assets.motionbank.org",

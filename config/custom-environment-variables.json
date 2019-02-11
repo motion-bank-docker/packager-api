@@ -2,6 +2,7 @@
   "api": {
     "uriBase": "API_URI_BASE",
     "apiHost": "API_HOST",
+    "transcoderHost": "TRANSCODER_HOST",
     "auth0AppMetadataPrefix": "AUTH0_APP_METADATA_PREFIX"
   },
   "http": {
@@ -9,6 +10,7 @@
     "port": "PORT"
   },
   "assets": {
+    "packagesBucket": "PACKAGES_BUCKET",
     "host": "ASSETS_HOST",
     "client": {
       "endPoint": "ASSETS_ENDPOINT",
