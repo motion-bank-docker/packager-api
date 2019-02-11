@@ -4,6 +4,10 @@
   "description": "Packages scores as static standalone modules",
   "main": "src/index.js",
   "scripts": {
+    "docker-build": "docker build -t motionbank/packager-api:latest .",
+    "docker-push": "docker push motionbank/packager-api:latest",
+    "docker-release": "npm run docker-build && npm run docker-push",
+    "start": "node src",
     "metapak": "metapak",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
