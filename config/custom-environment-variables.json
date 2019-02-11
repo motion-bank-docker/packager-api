@@ -1,0 +1,26 @@
+{
+  "api": {
+    "uriBase": "API_URI_BASE",
+    "apiHost": "API_HOST",
+    "auth0AppMetadataPrefix": "AUTH0_APP_METADATA_PREFIX"
+  },
+  "http": {
+    "host": "HOST",
+    "port": "PORT"
+  },
+  "assets": {
+    "host": "ASSETS_HOST",
+    "client": {
+      "endPoint": "ASSETS_ENDPOINT",
+      "port": "ASSETS_PORT",
+      "useSSL": "ASSETS_SECURE",
+      "accessKey": "ASSETS_ACCESS_KEY",
+      "secretKey": "ASSETS_SECRET_KEY"
+    }
+  },
+  "auth": {
+    "jwt": {
+      "audience": "AUTH0_AUDIENCE"
+    }
+  }
+}
