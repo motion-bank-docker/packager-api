@@ -12,6 +12,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mainz University of Applied Sciences (Motion Bank Project)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.rlp.net/motionbank/packager-api.git"
+  },
+  "bugs": {
+    "url": "https://gitlab.rlp.net/motionbank/packager-api/issues"
+  },
+  "homepage": "https://gitlab.rlp.net/motionbank/packager-api#readme",
   "license": "MIT",
   "metapak": {
     "configs": [
