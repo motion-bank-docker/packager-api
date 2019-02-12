@@ -9,8 +9,9 @@ const
   path = require('path'),
   fsx = require('fs-extra'),
   yazl = require('yazl'),
-  readArchive = require('../lib/read-archive'),
+  copyTemplate = require('./copy-template'),
   send = require('@polka/send-type'),
+  { JSDOM } = require('jsdom'),
   { DateTime } = require('luxon'),
   Service = require('mbjs-generic-api/src/lib/service')
 
@@ -120,9 +121,18 @@ class Packager extends Service {
     await fsx.ensureDir(outDir)
 
     await this.minio.fGetObject(config.assets.packagesBucket, 'template.zip', path.join(os.tmpdir(), 'template.zip'))
-    const results = await readArchive(path.join(os.tmpdir(), 'template.zip'), outDir)
+    const results = await copyTemplate(path.join(os.tmpdir(), 'template.zip'), outDir)
 
     for (let result of results) {
+      if (result.indexOf('index.html') > -1) {
+        const
+          html = await fs.readFile(path.join(outDir, result)),
+          dom = new JSDOM(html)
+        dom.window.document.title = rootMap.title
+        dom.window.document.querySelector("meta[name=description]")
+          .setAttribute('content', 'Published using MoSys by Motion Bank')
+        await fs.writeFile(path.join(outDir, result), dom.serialize())
+      }
       archive.addFile(path.join(outDir, result), path.join(rootMap.uuid, result))
     }
 
