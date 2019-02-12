@@ -91,7 +91,7 @@ class Packager extends Service {
     for (let annotation of annotations.data) {
       if (annotation.body.type === 'Video') {
         const metaResult = await axios.get(`${config.api.transcoderHost}/metadata/url?url=${encodeURIComponent(annotation.body.source.id)}`)
-        metadata[annotation.uuid] = metaResult.data || {}
+        metadata[annotation.uuid] = { annotation, metadata: metaResult.data || {} }
 
         const query = {
           'target.id': annotation.target.id,
@@ -128,6 +128,12 @@ class Packager extends Service {
     await fsx.ensureDir(path.join(outDir, dataDir))
 
     const
+      rootfile = path.join(dataDir, 'root.json'),
+      rootout = path.join(outDir, rootfile)
+    await fs.writeFile(rootout, JSON.stringify({ uuid: rootMap.uuid }))
+    archive.addFile(rootout, path.join(rootMap.uuid, rootfile))
+
+    const
       mapfile = path.join(dataDir, 'maps.json'),
       mapout = path.join(outDir, mapfile)
     await fs.writeFile(mapout, JSON.stringify(maps))
@@ -141,9 +147,11 @@ class Packager extends Service {
     archive.addFile(annoout, path.join(rootMap.uuid, annofile))
 
     const
+      metaobjects = [],
       metafile = path.join(dataDir, 'metadata.json'),
       metaout = path.join(outDir, metafile)
-    await fs.writeFile(metaout, JSON.stringify(metadata))
+    Object.keys(metadata).forEach(key => metaobjects.push(metadata[key]))
+    await fs.writeFile(metaout, JSON.stringify(metaobjects))
     archive.addFile(metaout, path.join(rootMap.uuid, metafile))
 
     archive.end()
