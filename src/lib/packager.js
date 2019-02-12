@@ -61,7 +61,9 @@ class Packager extends Service {
       try {
         const result = await axios.get(url, requestConfig)
         return result.data
-      } catch (e) { /* ignored */ }
+      } catch (e) {
+        console.log('Optional fetch failed', url, e.message)
+      }
     }
 
     const
@@ -90,8 +92,8 @@ class Packager extends Service {
 
     for (let annotation of annotations.data) {
       if (annotation.body.type === 'Video') {
-        const metaResult = await axios.get(`${config.api.transcoderHost}/metadata/url?url=${encodeURIComponent(annotation.body.source.id)}`)
-        metadata[annotation.uuid] = { annotation, metadata: metaResult.data || {} }
+        const metaResult = await optionalFetch(`${config.api.transcoderHost}/metadata/url?url=${encodeURIComponent(annotation.body.source.id)}`)
+        metadata[annotation.uuid] = { annotation, metadata: metaResult || {} }
 
         const query = {
           'target.id': annotation.target.id,
