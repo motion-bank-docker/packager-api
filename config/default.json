@@ -2,6 +2,7 @@
   "api": {
     "uriBase": "http://id.motionbank.org",
     "apiHost": "https://api.motionbank.org",
+    "storageHost": "https://storage.motionbank.org",
     "transcoderHost": "https://transcoder.motionbank.org",
     "auth0AppMetadataPrefix": "https://app.motionbank.org/app_metadata/"
   },

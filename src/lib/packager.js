@@ -38,6 +38,7 @@ class Packager extends Service {
     const
       metadata = {},
       maps = [],
+      files = [],
       annotations = {
         gridMetadata: [],
         cells: [],
@@ -83,8 +84,14 @@ class Packager extends Service {
         parsedValue = JSON.parse(cell.body.value)
       } catch (e) { /* ignored */ }
       if (parsedValue) {
-        const { sourceUuid } = parsedValue
-        if (sourceUuid) {
+        const { sourceUuid, type, content } = parsedValue
+        if (type && type === 'image') {
+          if (files.indexOf(content) === -1) files.push(content)
+          const basename = path.basename(new URL(content).pathname)
+          parsedValue.content = `statics/resources/files/${basename}`
+          cell.body.value = JSON.stringify(parsedValue)
+        }
+        else if (sourceUuid) {
           const data = await optionalFetch(`${config.api.apiHost}/annotations/${sourceUuid}`)
           if (data && !hasAnnotation(data.uuid, annotations.data)) annotations.data.push(data)
         }
@@ -138,6 +145,27 @@ class Packager extends Service {
 
     const dataDir = path.join('statics', 'resources')
     await fsx.ensureDir(path.join(outDir, dataDir))
+
+    const filesDir = path.join('statics', 'resources', 'files')
+    await fsx.ensureDir(path.join(outDir, filesDir))
+
+    for (let file of files) {
+      try {
+        const
+          basename = path.basename(new URL(file).pathname),
+          output = fs.createWriteStream(path.join(outDir, filesDir, basename)),
+          result = await axios({url: file, method: 'GET', responseType: 'stream', headers: { Authorization: req.headers.authorization }})
+        result.data.pipe(output)
+        await new Promise((resolve, reject) => {
+          output.on('error', err => reject(err))
+          output.on('finish', () => resolve())
+        })
+        archive.addFile(path.join(outDir, filesDir, basename), path.join(rootMap.uuid, filesDir, basename))
+      }
+      catch (e) {
+        console.log('File fetch failed', file, e.message)
+      }
+    }
 
     const
       rootfile = path.join(dataDir, 'root.json'),
