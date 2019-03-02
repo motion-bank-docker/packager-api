@@ -7,8 +7,8 @@
     "docker-build": "docker build -t motionbank/packager-api:latest .",
     "docker-push": "docker push motionbank/packager-api:latest",
     "docker-release": "npm run docker-build && npm run docker-push",
-    "start": "node src",
     "metapak": "metapak",
+    "start": "node src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mainz University of Applied Sciences (Motion Bank Project)",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "metapak": "^1.0.3",
-    "metapak-motionbank": "^1.12.1"
+    "metapak-motionbank": "^1.13.0"
   },
   "dependencies": {
     "axios": "^0.18.0",
