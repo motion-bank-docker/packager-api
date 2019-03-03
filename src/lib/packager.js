@@ -51,6 +51,11 @@ class Packager extends Service {
       },
       mapResult = await axios.get(`${config.api.apiHost}/maps/${parseURI(req.body.id).uuid}`, requestConfig)
     const rootMap = mapResult.data
+    if (rootMap.stylesheet && rootMap.stylesheet.id) {
+      files.push(rootMap.stylesheet.id)
+      const basename = path.basename(new URL(content).pathname)
+      rootMap.stylesheet.id = `statics/resources/files/${basename}`
+    }
     maps.push(rootMap)
 
     if (rootMap.type.indexOf(constants.mapTypes.MAP_TYPE_2DGRID) === -1) {
