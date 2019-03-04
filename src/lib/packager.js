@@ -53,7 +53,7 @@ class Packager extends Service {
     const rootMap = mapResult.data
     if (rootMap.stylesheet && rootMap.stylesheet.id) {
       files.push(rootMap.stylesheet.id)
-      const basename = path.basename(new URL(content).pathname)
+      const basename = path.basename(new URL(rootMap.stylesheet.id).pathname)
       rootMap.stylesheet.id = `statics/resources/files/${basename}`
     }
     maps.push(rootMap)
