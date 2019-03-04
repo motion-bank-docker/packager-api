@@ -36,7 +36,7 @@
     "jsdom": "^13.2.0",
     "luxon": "^1.11.2",
     "mbjs-data-models": "0.0.15",
-    "mbjs-generic-api": "^0.5.2",
+    "mbjs-generic-api": "^0.8.5",
     "mbjs-utils": "0.0.6",
     "minio": "^7.0.5",
     "mkdirp": "^0.5.1",
