@@ -4,7 +4,7 @@ const
   fs = require('mz/fs'),
   fsx = require('fs-extra')
 
-const copyTemplate = (archivePath, outPath) => {
+const extractTemplate = (archivePath, outPath) => {
   const results = []
   const extractFile = (entry, filePath, zipfile) => {
     return new Promise((resolve, reject) => {
@@ -38,4 +38,4 @@ const copyTemplate = (archivePath, outPath) => {
   })
 }
 
-module.exports = copyTemplate
+module.exports = extractTemplate
