@@ -12,30 +12,34 @@ const
   } = require('./utils')
 
 const fetchMap = async function (uuid, results, requestConfig) {
-  let mapResult = await axios.get(`${config.api.apiHost}/maps/${uuid}`, requestConfig)
-  const rootMap = mapResult.data
-  if (rootMap.stylesheet && rootMap.stylesheet.id) {
-    results.files.push(rootMap.stylesheet.id)
-    const basename = path.basename(new URL(rootMap.stylesheet.id).pathname)
-    rootMap.stylesheet.id = `statics/resources/files/${basename}`
-  }
-  results.maps.push(rootMap)
+  if (results.maps.filter(map => map.uuid === uuid).length) return results
+  const linkedGrids = []
 
-  if (rootMap.type.indexOf(constants.mapTypes.MAP_TYPE_2DGRID) === -1) {
+  let mapResult = await axios.get(`${config.api.apiHost}/maps/${uuid}`, requestConfig)
+  const map = mapResult.data
+  if (map.stylesheet && map.stylesheet.id) {
+    results.files.push(map.stylesheet.id)
+    const basename = path.basename(new URL(map.stylesheet.id).pathname)
+    map.stylesheet.id = `statics/resources/files/${basename}`
+  }
+
+  results.maps.push(map)
+
+  if (map.type.indexOf(constants.mapTypes.MAP_TYPE_2DGRID) === -1) {
     return send(res, 400, 'Map type not supported')
   }
 
   const
-    metaQuery = { 'body.type': '2DGridMetadata', 'target.id': rootMap.id },
+    metaQuery = { 'body.type': '2DGridMetadata', 'target.id': map.id },
     metaResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(metaQuery)}`, requestConfig)
-  results.annotations.gridMetadata = metaResult.data.items
+  results.annotations.gridMetadata = results.annotations.gridMetadata.concat(metaResult.data.items)
 
   const
-    cellQuery = { 'body.type': '2DCell', 'target.id': rootMap.id },
+    cellQuery = { 'body.type': '2DCell', 'target.id': map.id },
     cellResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(cellQuery)}`, requestConfig)
-  results.annotations.cells = cellResult.data.items
+  results.annotations.cells = results.annotations.cells.concat(cellResult.data.items)
 
-  for (let cell of results.annotations.cells) {
+  for (let cell of cellResult.data.items) {
     let parsedValue
     try {
       parsedValue = JSON.parse(cell.body.value)
@@ -47,8 +51,8 @@ const fetchMap = async function (uuid, results, requestConfig) {
           getGridUuid = /^.*\/mosys\/grids\/([a-f,0-9,-]+).*/,
           gridUuid = link.match(getGridUuid)
         if (gridUuid.length > 1 && gridUuid[1] !== uuid) {
-          const results = await fetchMap(gridUuid[1], requestConfig)
-          console.log('found linked grid', results)
+          console.log('found linked grid', gridUuid[1])
+          linkedGrids.push(gridUuid[1])
         }
       }
       if (type && type.toLowerCase() === 'image') {
@@ -88,6 +92,10 @@ const fetchMap = async function (uuid, results, requestConfig) {
         }
       }
     }
+  }
+
+  for (let linkedUuid of linkedGrids) {
+    results = await fetchMap(linkedUuid, results, requestConfig)
   }
 
   return results
