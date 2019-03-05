@@ -18,9 +18,14 @@ const fetchMap = async function (uuid, results, requestConfig) {
   let mapResult = await axios.get(`${config.api.apiHost}/maps/${uuid}`, requestConfig)
   const map = mapResult.data
   if (map.stylesheet && map.stylesheet.id) {
-    results.files.push(map.stylesheet.id)
-    const basename = path.basename(new URL(map.stylesheet.id).pathname)
-    map.stylesheet.id = `statics/resources/files/${basename}`
+    try {
+      const basename = path.basename(new URL(map.stylesheet.id).pathname)
+      results.files.push(map.stylesheet.id)
+      map.stylesheet.id = `statics/resources/files/${basename}`
+    }
+    catch (e) {
+      console.log('Failed to add grid stylesheet for URL', map.stylesheet.id)
+    }
   }
 
   results.maps.push(map)
@@ -55,10 +60,15 @@ const fetchMap = async function (uuid, results, requestConfig) {
         }
       }
       if (type && type.toLowerCase() === 'image') {
-        if (results.files.indexOf(content) === -1) results.files.push(content)
-        const basename = path.basename(new URL(content).pathname)
-        parsedValue.content = `statics/resources/files/${basename}`
-        cell.body.value = JSON.stringify(parsedValue)
+        try {
+          const basename = path.basename(new URL(content).pathname)
+          if (results.files.indexOf(content) === -1) results.files.push(content)
+          parsedValue.content = `statics/resources/files/${basename}`
+          cell.body.value = JSON.stringify(parsedValue)
+        }
+        catch (e) {
+          console.log('Failed to add image for URL', content)
+        }
       }
       else if (sourceUuid) {
         const data = await optionalFetch(`${config.api.apiHost}/annotations/${sourceUuid}`, requestConfig)
