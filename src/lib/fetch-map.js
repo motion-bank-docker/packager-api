@@ -15,7 +15,15 @@ const fetchMap = async function (uuid, results, requestConfig) {
   if (results.maps.filter(map => map.uuid === uuid).length) return results
   const linkedGrids = []
 
-  let mapResult = await axios.get(`${config.api.apiHost}/maps/${uuid}`, requestConfig)
+  let mapResult
+  try {
+    mapResult = await axios.get(`${config.api.apiHost}/maps/${uuid}`, requestConfig)
+  }
+  catch (e) {
+    console.log('Failed to get map for UUID', uuid)
+    return results
+  }
+
   const map = mapResult.data
   if (map.stylesheet && map.stylesheet.id) {
     try {
