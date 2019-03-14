@@ -63,7 +63,7 @@ const fetchMap = async function (uuid, results, requestConfig) {
         const
           getGridUuid = /^.*\/mosys\/grids\/([a-f,0-9,-]+).*/,
           gridUuid = link.match(getGridUuid)
-        if (gridUuid.length > 1 && gridUuid[1] !== uuid) {
+        if (gridUuid && gridUuid.length > 1 && gridUuid[1] !== uuid) {
           linkedGrids.push(gridUuid[1])
         }
       }
