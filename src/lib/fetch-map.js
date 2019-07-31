@@ -112,7 +112,10 @@ const fetchMap = async function (uuid, results, requestConfig) {
   }
 
   for (let linkedUuid of linkedGrids) {
-    results = await fetchMap(linkedUuid, results, requestConfig)
+    const existing = results.maps.find(map => map.uuid === linkedUuid)
+    if (!existing) {
+      results = await fetchMap(linkedUuid, results, requestConfig)
+    }
   }
 
   return results
