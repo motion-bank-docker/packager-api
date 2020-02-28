@@ -34,5 +34,18 @@
       "algorithms": ["RS256"],
       "credentialsRequired": false
     }
+  },
+  "acl": {
+    "mongodb": {}
+  },
+  "microservices": {
+    "acl": {
+      "key": "acl",
+      "namespace": null
+    },
+    "metadata": {
+      "key": "microservices",
+      "namespace": null
+    }
   }
 }

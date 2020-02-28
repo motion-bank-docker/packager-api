@@ -25,5 +25,15 @@
     "jwt": {
       "audience": "AUTH0_AUDIENCE"
     }
+  },
+  "microservices": {
+    "acl": {
+      "key": "MICROSERVICES_ACL_KEY",
+      "namespace": "MICROSERVICES_ACL_NAMESPACE"
+    },
+    "metadata": {
+      "key": "MICROSERVICES_METADATA_KEY",
+      "namespace": "MICROSERVICES_METADATA_NAMESPACE"
+    }
   }
 }
