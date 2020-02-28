@@ -9,7 +9,7 @@
   "http": {
     "host": "0.0.0.0",
     "port": 9191,
-    "requestTimeoutSeconds": 300
+    "requestTimeoutSeconds": 600
   },
   "assets": {
     "packagesBucket": "packages",
