@@ -1,6 +1,6 @@
 {
   "name": "packager-api",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Packages scores as static standalone modules",
   "main": "src/index.js",
   "scripts": {
