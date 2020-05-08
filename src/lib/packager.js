@@ -16,7 +16,7 @@ const
 
 class Packager extends Service {
   constructor (api, config) {
-    super('assets', api)
+    super('packager', api)
 
     const
       _this = this,
@@ -35,7 +35,7 @@ class Packager extends Service {
   async postHandler (req, res) {
     req.setTimeout(config.http.requestTimeoutSeconds * 1000)
 
-    const rootId = req.body.id
+    const { rootId } = req.body
     const requestConfig = {
       headers: {
         Authorization: req.headers.authorization

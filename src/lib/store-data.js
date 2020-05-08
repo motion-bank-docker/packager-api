@@ -2,18 +2,21 @@ const
   fs = require('mz/fs'),
   path = require('path'),
   fsx = require('fs-extra'),
-  fetchFiles = require('./fetch-files')
+  fetchFiles = require('./fetch-files'),
+  parseURI = require('mbjs-data-models/src/lib/parse-uri')
 
-const storeData = async function (outDir, rootUuid, mapResults, archive, requestConfig) {
-  const dataDir = path.join('statics', 'resources')
+const storeData = async function (outDir, rootId, mapResults, archive, requestConfig) {
+  const
+    rootUuid = parseURI(rootId).uuid,
+    dataDir = path.join('statics', 'resources')
+
   await fsx.ensureDir(path.join(outDir, dataDir))
-
-  await fetchFiles(outDir, rootUuid, mapResults.files, archive, requestConfig)
+  await fetchFiles(outDir, rootId, mapResults.files, archive, requestConfig)
 
   const
     rootfile = path.join(dataDir, 'root.json'),
     rootout = path.join(outDir, rootfile)
-  await fs.writeFile(rootout, JSON.stringify({ uuid: rootUuid }))
+  await fs.writeFile(rootout, JSON.stringify({ id: rootId, uuid: rootUuid }))
   archive.addFile(rootout, path.join(rootUuid, rootfile))
 
   const
@@ -23,21 +26,16 @@ const storeData = async function (outDir, rootUuid, mapResults, archive, request
   archive.addFile(mapout, path.join(rootUuid, mapfile))
 
   const
-    allAnnotations = [].concat(mapResults.annotations.data)
-      .concat(mapResults.annotations.cells)
-      .concat(mapResults.annotations.gridMetadata),
     annofile = path.join(dataDir, 'annotations.json'),
     annoout = path.join(outDir, annofile)
-  await fs.writeFile(annoout, JSON.stringify(allAnnotations))
+  await fs.writeFile(annoout, JSON.stringify(mapResults.annotations))
   archive.addFile(annoout, path.join(rootUuid, annofile))
 
   const
-    metaobjects = [],
-    metafile = path.join(dataDir, 'metadata.json'),
-    metaout = path.join(outDir, metafile)
-  Object.keys(mapResults.metadata).forEach(key => metaobjects.push(mapResults.metadata[key]))
-  await fs.writeFile(metaout, JSON.stringify(metaobjects))
-  archive.addFile(metaout, path.join(rootUuid, metafile))
+    cellsFile = path.join(dataDir, 'cells.json'),
+    cellsout = path.join(outDir, cellsFile)
+  await fs.writeFile(cellsout, JSON.stringify(mapResults.cells))
+  archive.addFile(cellsout, path.join(rootUuid, cellsFile))
 }
 
 module.exports = storeData

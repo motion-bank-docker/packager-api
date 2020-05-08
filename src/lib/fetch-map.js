@@ -5,7 +5,6 @@ const
   parseURI = require('mbjs-data-models/src/lib/parse-uri'),
   path = require('path'),
   send = require('@polka/send-type'),
-  { DateTime } = require('luxon'),
   {
     makeQuery,
     hasAnnotation,
@@ -39,83 +38,60 @@ const fetchMap = async function (id, results, requestConfig) {
 
   results.maps.push(map)
 
-  if (map.type.indexOf(constants.mapTypes.MAP_TYPE_2DGRID) === -1) {
+  if (map.type.indexOf(constants.mapClasses.MAP_CLASS_GRID) === -1) {
     return send(res, 400, 'Map type not supported')
   }
 
   const
-    metaQuery = { 'body.type': '2DGridMetadata', 'target.id': map.id },
-    metaResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(metaQuery)}`, requestConfig)
-  results.annotations.gridMetadata = results.annotations.gridMetadata.concat(metaResult.data.items)
+    annotationsQuery = { 'target.id': map.id },
+    annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
 
-  const
-    cellQuery = { 'body.type': '2DCell', 'target.id': map.id },
-    cellResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(cellQuery)}`, requestConfig)
-  results.annotations.cells = results.annotations.cells.concat(cellResult.data.items)
+  results.annotations = annotationsResult.data.items
 
-  for (let cell of cellResult.data.items) {
-    let parsedValue
-    try {
-      parsedValue = JSON.parse(cell.body.value)
-    } catch (e) { /* ignored */ }
-    if (parsedValue) {
-      const { sourceUuid, type, content, link } = parsedValue
-      if (link) {
-        const
-          getGridUuid = /^.*\/mosys\/grids\/([a-f,0-9,-]+).*/,
-          gridUuid = link.match(getGridUuid)
-        if (gridUuid && gridUuid.length > 1 && gridUuid[1] !== parseURI(id).uuid) {
-          linkedGrids.push(gridUuid[1])
-        }
-      }
-      if (type && type.toLowerCase() === 'image') {
-        try {
-          const basename = path.basename(new URL(content).pathname)
-          if (results.files.indexOf(content) === -1) results.files.push(content)
-          parsedValue.content = `statics/resources/files/${basename}`
-          cell.body.value = JSON.stringify(parsedValue)
-        }
-        catch (e) {
-          console.log('Failed to add image for URL', content)
-        }
-      }
-      else if (sourceUuid) {
-        const data = await optionalFetch(`${config.api.apiHost}/annotations/${sourceUuid}`, requestConfig)
-        if (data && !hasAnnotation(data.uuid, results.annotations.data)) results.annotations.data.push(data)
-      }
+  for (const annotation of results.annotations) {
+    if (annotation.body.type === `${constants.BASE_URI_NS}cell.jsonld` && annotation.body.source.id) {
+      const cellResult = await axios.get(`${config.api.apiHost}/cells/${parseURI(annotation.body.source.id).uuid}`, requestConfig)
+      results.cells.push(cellResult.data)
     }
-  }
-
-  for (let annotation of results.annotations.data) {
-    if (annotation.body.type === 'Video') {
+    else if (annotation.body.type === 'Video') {
       const
-        metaUrl = `${config.api.transcoderHost}/metadata/url?url=${encodeURIComponent(annotation.body.source.id)}`,
-        metaResult = await optionalFetch(metaUrl, requestConfig)
-      results.metadata[annotation.uuid] = { annotation, metadata: metaResult || {} }
-
-      const query = {
-        'target.id': annotation.target.id,
-        'target.selector.value': {
-          $gte: annotation.target.selector.value
-        }
-      }
-      if (results.metadata[annotation.uuid].duration) {
-        query['$lt'] = DateTime.fromISO(annotation.target.selector.value, { setZone: true })
-          .plus(metaResult.data.duration * 1000).toISO()
-      }
-      const data = await optionalFetch(`${config.api.apiHost}/annotations?query=${makeQuery(query)}`, requestConfig)
-      if (data && data.items) {
-        for (let item of data.items) {
-          if (!hasAnnotation(item.uuid, results.annotations.data)) results.annotations.data.push(item)
-        }
+        metaQuery = { 'target.id': annotation.body.source.id },
+        metaResults = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(metaQuery)}`, requestConfig)
+      for (const annotation of metaResults.data.items) {
+        if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
       }
     }
   }
 
-  for (let linkedUuid of linkedGrids) {
-    const existing = results.maps.find(map => map.uuid === linkedUuid)
+  for (const cell of results.cells) {
+    if (cell.source._value.link) {
+      const
+        getGridUuid = /^.*\/mosys\/grids\/([a-f0-9\-]+).*/,
+        gridUuid = cell.source._value.link.match(getGridUuid)
+      if (gridUuid && gridUuid.length > 1 && gridUuid[1] !== parseURI(id).uuid) {
+        linkedGrids.push(`${constants.BASE_URI}maps/${gridUuid[1]}`)
+      }
+    }
+    if (cell.configuration._value.component === 'CellImage') {
+      if (cell.source._value.content.indexOf('statics/resources/files/') !== 0) {
+        const basename = path.basename(new URL(cell.source._value.content).pathname)
+        if (results.files.indexOf(cell.source._value.content) === -1) results.files.push(cell.source._value.content)
+        cell.source._value.content = `statics/resources/files/${basename}`
+        cell.source.value = JSON.stringify(cell.source._value)
+      }
+    }
+    else if (cell.source._value.id) {
+      if (cell.source._value.id.indexOf(`${constants.BASE_URI}annotations/`) === 0) {
+        const data = await optionalFetch(`${config.api.apiHost}/annotations/${parseURI(cell.source._value.id).uuid}`, requestConfig)
+        if (data && !hasAnnotation(data.id, results.annotations)) results.annotations.push(data)
+      }
+    }
+  }
+
+  for (let linkedId of linkedGrids) {
+    const existing = results.maps.find(map => map.id === linkedId)
     if (!existing) {
-      results = await fetchMap(linkedUuid, results, requestConfig)
+      results = await fetchMap(linkedId, results, requestConfig)
     }
   }
 

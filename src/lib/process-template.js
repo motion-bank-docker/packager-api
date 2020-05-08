@@ -1,9 +1,10 @@
 const
   fs = require('mz/fs'),
   path = require('path'),
-  { JSDOM } = require('jsdom')
+  { JSDOM } = require('jsdom'),
+  parseURI = require('mbjs-data-models/src/lib/parse-uri')
 
-const processTemplate = async function (outDir, rootUuid, entries, mapResults, archive) {
+const processTemplate = async function (outDir, rootId, entries, mapResults, archive) {
   for (let entry of entries) {
     if (entry.indexOf('index.html') > -1) {
       const
@@ -14,7 +15,7 @@ const processTemplate = async function (outDir, rootUuid, entries, mapResults, a
         .setAttribute('content', 'Published using MoSys by Motion Bank')
       await fs.writeFile(path.join(outDir, entry), dom.serialize())
     }
-    archive.addFile(path.join(outDir, entry), path.join(rootUuid, entry))
+    archive.addFile(path.join(outDir, entry), path.join(parseURI(rootId).uuid, entry))
   }
 }
 

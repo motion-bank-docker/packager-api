@@ -2,7 +2,7 @@ const axios = require('axios')
 
 const
   makeQuery = query => encodeURIComponent(JSON.stringify(query)),
-  hasAnnotation = (uuid, annotations) => annotations.filter(a => a.uuid === uuid).length
+  hasAnnotation = (id, annotations) => annotations.filter(a => a.id === id).length
 
 const optionalFetch = async (url, requestConfig) => {
   try {
