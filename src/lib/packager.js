@@ -35,13 +35,13 @@ class Packager extends Service {
   async postHandler (req, res) {
     req.setTimeout(config.http.requestTimeoutSeconds * 1000)
 
-    const rootUuid = parseURI(req.body.id).uuid
+    const rootId = req.body.id
     const requestConfig = {
       headers: {
         Authorization: req.headers.authorization
       }
     }
-    const mapResults = await fetchMap(rootUuid, {
+    const mapResults = await fetchMap(rootId, {
       metadata: {},
       maps: [],
       files: [],
@@ -69,8 +69,8 @@ class Packager extends Service {
     const
       archivePath = `${outDir}.zip`,
       archive = new yazl.ZipFile()
-    await processTemplate(outDir, rootUuid, templateEntries, mapResults, archive)
-    await storeData(outDir, rootUuid, mapResults, archive, requestConfig)
+    await processTemplate(outDir, rootId, templateEntries, mapResults, archive)
+    await storeData(outDir, rootId, mapResults, archive, requestConfig)
     archive.end()
 
     await new Promise((resolve, reject) => {
@@ -79,11 +79,11 @@ class Packager extends Service {
         .on('close', () => resolve())
     })
 
-    await this.minio.fPutObject(config.assets.packagesBucket, `${rootUuid}.zip`, archivePath, { 'Content-Type': 'application/zip' })
+    await this.minio.fPutObject(config.assets.packagesBucket, `${rootId}.zip`, archivePath, { 'Content-Type': 'application/zip' })
     await fs.unlink(archivePath)
     await fsx.remove(outDir)
 
-    const url = await this.minio.presignedGetObject(config.assets.packagesBucket, `${rootUuid}.zip`)
+    const url = await this.minio.presignedGetObject(config.assets.packagesBucket, `${parseURI(rootId).uuid}.zip`)
     send(res, 200, url)
   }
 }

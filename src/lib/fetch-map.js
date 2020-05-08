@@ -2,6 +2,7 @@ const
   axios = require('axios'),
   config = require('config'),
   constants = require('mbjs-data-models/src/constants'),
+  parseURI = require('mbjs-data-models/src/lib/parse-uri'),
   path = require('path'),
   send = require('@polka/send-type'),
   { DateTime } = require('luxon'),
@@ -11,16 +12,16 @@ const
     optionalFetch
   } = require('./utils')
 
-const fetchMap = async function (uuid, results, requestConfig) {
-  if (results.maps.filter(map => map.uuid === uuid).length) return results
+const fetchMap = async function (id, results, requestConfig) {
+  if (results.maps.filter(map => map.id === id).length) return results
   const linkedGrids = []
 
   let mapResult
   try {
-    mapResult = await axios.get(`${config.api.apiHost}/maps/${uuid}`, requestConfig)
+    mapResult = await axios.get(`${config.api.apiHost}/maps/${parseURI(id).uuid}`, requestConfig)
   }
   catch (e) {
-    console.log('Failed to get map for UUID', uuid)
+    console.log('Failed to get map for ID', id)
     return results
   }
 
@@ -63,7 +64,7 @@ const fetchMap = async function (uuid, results, requestConfig) {
         const
           getGridUuid = /^.*\/mosys\/grids\/([a-f,0-9,-]+).*/,
           gridUuid = link.match(getGridUuid)
-        if (gridUuid && gridUuid.length > 1 && gridUuid[1] !== uuid) {
+        if (gridUuid && gridUuid.length > 1 && gridUuid[1] !== parseURI(id).uuid) {
           linkedGrids.push(gridUuid[1])
         }
       }
