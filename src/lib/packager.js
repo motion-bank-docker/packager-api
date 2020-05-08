@@ -23,7 +23,7 @@ class Packager extends Service {
       Minio = require('minio'),
       opts = Object.assign({}, config.assets.client)
 
-    opts.secure = config.assets.client.secure && (config.assets.client.secure === true || config.assets.client.secure === 'true')
+    opts.useSSL = config.assets.client.secure && (config.assets.client.secure === true || config.assets.client.secure === 'true') ? true : false
     opts.port = config.assets.client.port ? parseInt(config.assets.client.port) : undefined
 
     _this.config = config
@@ -45,11 +45,8 @@ class Packager extends Service {
       metadata: {},
       maps: [],
       files: [],
-      annotations: {
-        gridMetadata: [],
-        cells: [],
-        data: []
-      }
+      cells: [],
+      annotations: []
     }, requestConfig)
 
     const outDir = path.join(os.tmpdir(), ObjectUtil.uuid4())
