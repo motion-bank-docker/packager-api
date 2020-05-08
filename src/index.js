@@ -10,10 +10,10 @@ const setup = async function () {
 
   const
     checkFeatures = require('mbjs-generic-api/src/middleware/check-features'),
-    addAuthor = require('mbjs-generic-api/src/middleware/author')
+    addCreator = require('mbjs-generic-api/src/middleware/creator')
 
   checkFeatures(api, ['packager'], ['get'])
-  addAuthor(api, config)
+  addCreator(api, config)
 
   /** Register resources */
 
