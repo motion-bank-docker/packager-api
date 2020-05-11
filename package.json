@@ -40,7 +40,7 @@
     "mbjs-data-models": "^2.0.18",
     "mbjs-generic-api": "^2.4.1",
     "mbjs-utils": "0.0.6",
-    "minio": "^7.0.5",
+    "minio": "^7.0.16",
     "mkdirp": "^0.5.1",
     "mongodb": "^3.1.13",
     "mz": "^2.7.0",
