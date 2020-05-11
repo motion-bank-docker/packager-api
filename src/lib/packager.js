@@ -79,7 +79,7 @@ class Packager extends Service {
         .on('close', () => resolve())
     })
 
-    await this.minio.fPutObject(config.assets.packagesBucket, `${rootId}.zip`, archivePath, { 'Content-Type': 'application/zip' })
+    await this.minio.fPutObject(config.assets.packagesBucket, `${parseURI(rootId).uuid}.zip`, archivePath, { 'Content-Type': 'application/zip' })
     await fs.unlink(archivePath)
     await fsx.remove(outDir)
 
