@@ -1,10 +1,11 @@
 const
   config = require('config'),
+  { version } = require('../package.json'),
   GenericAPI = require('mbjs-generic-api')
 
 const setup = async function () {
   const api = new GenericAPI()
-  await api.setup()
+  await api.setup(version)
 
   /** Register middleware */
 
