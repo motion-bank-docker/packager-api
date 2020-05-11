@@ -60,6 +60,24 @@ const fetchMap = async function (id, results, requestConfig) {
       for (const annotation of metaResults.data.items) {
         if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
       }
+
+      // FIXME: Enable cell start and end config
+      const
+        startMillis = annotation.target.selector._valueMillis, // + (this.cell.source._value.start ? this.cell.source._value.start * 1000 : 0),
+        endMillis = startMillis + annotation.target.selector._valueDuration // (this.cell.source._value.duration * 1000 || this.video.target.selector._valueDuration || 0)
+      const annotationsQuery = {
+        'target.id': annotation.target.id,
+        'target.type': constants.mapTypes.MAP_TYPE_TIMELINE,
+        'body.type': 'TextualBody',
+        'target.selector._valueMillis': {
+          $gte: startMillis,
+          $lte: endMillis
+        }
+      }
+      const annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
+      for (const annotation of annotationsResult.data.items) {
+        if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
+      }
     }
   }
 
