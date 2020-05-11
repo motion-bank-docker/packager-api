@@ -46,7 +46,7 @@ const fetchMap = async function (id, results, requestConfig) {
     annotationsQuery = { 'target.id': map.id },
     annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
 
-  results.annotations = annotationsResult.data.items
+  results.annotations = results.annotations.concat(annotationsResult.data.items)
 
   for (const annotation of results.annotations) {
     if (annotation.body.type === `${constants.BASE_URI_NS}cell.jsonld` && annotation.body.source.id) {
