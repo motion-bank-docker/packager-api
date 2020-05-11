@@ -54,12 +54,6 @@ class Packager extends Service {
 
     let needsTemplateFetch = true
 
-    // try {
-    //   const stats = fs.stat(path.join(os.tmpdir(), 'template.zip'))
-    //   if (stats.isFile() && Date.now() - stats.mtimeMs < 3600000) needsTemplateFetch = false
-    // }
-    // catch (e) { /* no template found */ }
-
     if (needsTemplateFetch) {
       await this.minio.fGetObject(config.assets.packagesBucket, 'template.zip', path.join(os.tmpdir(), 'template.zip'))
     }
