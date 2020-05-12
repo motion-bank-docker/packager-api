@@ -4,7 +4,6 @@ const
   constants = require('mbjs-data-models/src/constants'),
   parseURI = require('mbjs-data-models/src/lib/parse-uri'),
   path = require('path'),
-  send = require('@polka/send-type'),
   {
     makeQuery,
     hasAnnotation,
@@ -19,8 +18,9 @@ const fetchMap = async function (id, results, requestConfig) {
   try {
     mapResult = await axios.get(`${config.api.apiHost}/maps/${parseURI(id).uuid}`, requestConfig)
   }
-  catch (e) {
+  catch (err) {
     console.log('Failed to get map for ID', id)
+    this.api.captureException(err)
     return results
   }
 
@@ -31,15 +31,16 @@ const fetchMap = async function (id, results, requestConfig) {
       results.files.push(map.stylesheet.id)
       map.stylesheet.id = `statics/resources/files/${basename}`
     }
-    catch (e) {
+    catch (err) {
       console.log('Failed to add grid stylesheet for URL', map.stylesheet.id)
+      this.api.captureException(err)
     }
   }
 
   results.maps.push(map)
 
   if (map.type.indexOf(constants.mapClasses.MAP_CLASS_GRID) === -1) {
-    return send(res, 400, 'Map type not supported')
+    throw new TypeError('Map type not supported')
   }
 
   const
@@ -100,7 +101,7 @@ const fetchMap = async function (id, results, requestConfig) {
     }
     else if (cell.source._value.id) {
       if (cell.source._value.id.indexOf(`${constants.BASE_URI}annotations/`) === 0) {
-        const data = await optionalFetch(`${config.api.apiHost}/annotations/${parseURI(cell.source._value.id).uuid}`, requestConfig)
+        const data = await optionalFetch(cell.source._value.id, requestConfig)
         if (data && !hasAnnotation(data.id, results.annotations)) results.annotations.push(data)
       }
     }
