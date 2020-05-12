@@ -39,7 +39,7 @@
     "luxon": "^1.11.2",
     "mbjs-archive": "^2.0.0",
     "mbjs-data-models": "^2.0.18",
-    "mbjs-generic-api": "^2.4.1",
+    "mbjs-generic-api": "^2.5.0",
     "mbjs-utils": "0.0.6",
     "minio": "^7.0.16",
     "mkdirp": "^0.5.1",
