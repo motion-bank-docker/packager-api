@@ -22,7 +22,7 @@ class Packager extends Service {
       Minio = require('minio'),
       opts = Object.assign({}, config.assets.client)
 
-    opts.useSSL = config.assets.client.secure && (config.assets.client.secure === true || config.assets.client.secure === 'true') ? true : false
+    opts.useSSL = config.assets.client.useSSL && (config.assets.client.useSSL === true || config.assets.client.useSSL === 'true') ? true : false
     opts.port = config.assets.client.port ? parseInt(config.assets.client.port) : undefined
 
     this.config = config
