@@ -49,6 +49,26 @@ const fetchMap = async function (id, results, requestConfig) {
 
   results.annotations = results.annotations.concat(annotationsResult.data.items)
 
+  async function fetchLinkedAnnotations (annotation) {
+    // FIXME: Enable cell start and end config
+    const
+      startMillis = annotation.target.selector._valueMillis, // + (this.cell.source._value.start ? this.cell.source._value.start * 1000 : 0),
+      endMillis = startMillis + annotation.target.selector._valueDuration // (this.cell.source._value.duration * 1000 || this.video.target.selector._valueDuration || 0)
+    const annotationsQuery = {
+      'target.id': annotation.target.id,
+      'target.type': constants.mapTypes.MAP_TYPE_TIMELINE,
+      'body.type': 'TextualBody',
+      'target.selector._valueMillis': {
+        $gte: startMillis,
+        $lte: endMillis
+      }
+    }
+    const annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
+    for (const annotation of annotationsResult.data.items) {
+      if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
+    }
+  }
+
   for (const annotation of results.annotations) {
     if (annotation.body.type === `${constants.BASE_URI_NS}cell.jsonld` && annotation.body.source.id) {
       const cellResult = await axios.get(`${config.api.apiHost}/cells/${parseURI(annotation.body.source.id).uuid}`, requestConfig)
@@ -62,23 +82,7 @@ const fetchMap = async function (id, results, requestConfig) {
         if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
       }
 
-      // FIXME: Enable cell start and end config
-      const
-        startMillis = annotation.target.selector._valueMillis, // + (this.cell.source._value.start ? this.cell.source._value.start * 1000 : 0),
-        endMillis = startMillis + annotation.target.selector._valueDuration // (this.cell.source._value.duration * 1000 || this.video.target.selector._valueDuration || 0)
-      const annotationsQuery = {
-        'target.id': annotation.target.id,
-        'target.type': constants.mapTypes.MAP_TYPE_TIMELINE,
-        'body.type': 'TextualBody',
-        'target.selector._valueMillis': {
-          $gte: startMillis,
-          $lte: endMillis
-        }
-      }
-      const annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
-      for (const annotation of annotationsResult.data.items) {
-        if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
-      }
+      await fetchLinkedAnnotations(annotation)
     }
   }
 
@@ -101,8 +105,11 @@ const fetchMap = async function (id, results, requestConfig) {
     }
     else if (cell.source._value.id) {
       if (cell.source._value.id.indexOf(`${constants.BASE_URI}annotations/`) === 0) {
-        const data = await optionalFetch(cell.source._value.id, requestConfig)
-        if (data && !hasAnnotation(data.id, results.annotations)) results.annotations.push(data)
+        const data = await optionalFetch(`${config.api.apiHost}/annotations/${parseURI(cell.source._value.id).uuid}`, requestConfig)
+        if (data) {
+          if (!hasAnnotation(data.id, results.annotations)) results.annotations.push(data)
+          await fetchLinkedAnnotations(data)
+        }
       }
     }
   }
