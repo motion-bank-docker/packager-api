@@ -10,6 +10,6 @@
 
 ## License
 
-:copyright: 2019 Mainz University of Applied Sciences (Motion Bank Project) – 
+:copyright: 2020 Mainz University of Applied Sciences (Motion Bank Project) – 
 Released under the [MIT](https://github.com/motionbank-js/packager-api/blob/master/LICENSE) license
 
