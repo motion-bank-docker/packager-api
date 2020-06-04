@@ -35,7 +35,7 @@ class Packager extends Service {
   async postHandler (req, res) {
     req.setTimeout(config.http.requestTimeoutSeconds * 1000)
 
-    const rootUuid = parseURI(req.body.id).uuid
+    const rootUuid = req.body.uuid || parseURI(req.body.id).uuid
     const requestConfig = {
       headers: {
         Authorization: req.headers.authorization
