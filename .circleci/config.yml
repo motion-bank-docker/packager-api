@@ -1,0 +1,77 @@
+aliases:
+  - &install-dependencies
+    name: Install dependencies
+    command: |
+      apk add --update --no-cache nodejs nodejs-npm python make g++ pkgconfig libsecret-dev
+      npm config set unsafe-perm true
+      npm i -g npm
+      node --version
+      npm --version
+      npm install
+
+version: 2
+jobs:
+  release_production:
+    working_directory: /app
+    docker:
+      - image: docker:stable-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: *install-dependencies
+      - run:
+          name: Release Production Image
+          command: |
+            set +o pipefail
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+            docker build --no-cache -t motionbank/packager-api:latest .
+            docker push motionbank/packager-api:latest
+
+  release_staging:
+    working_directory: /app
+    docker:
+      - image: docker:stable-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: *install-dependencies
+      - run:
+          name: Release Production Image
+          command: |
+            set +o pipefail
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+            docker build --no-cache -t motionbank/packager-api:staging .
+            docker push motionbank/packager-api:staging
+
+  release_legacy:
+    working_directory: /app
+    docker:
+      - image: docker:stable-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: *install-dependencies
+      - run:
+          name: Release Legacy Image
+          command: |
+            set +o pipefail
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+            docker build --no-cache -t motionbank/packager-api:${CIRCLE_BRANCH} .
+            docker push motionbank/packager-api:${CIRCLE_BRANCH}
+
+workflows:
+  version: 2
+  build_pipeline:
+    jobs:
+      - release_production:
+          filters:
+            branches:
+              only: master
+      - release_staging:
+          filters:
+            branches:
+              only: staging
+      - release_legacy:
+          filters:
+            branches:
+              only: /^release_1_.+$/
