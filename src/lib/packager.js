@@ -2,6 +2,7 @@ const
   { ObjectUtil } = require('mbjs-utils'),
   config = require('config'),
   parseURI = require('mbjs-data-models/src/lib/parse-uri'),
+  constants = require('mbjs-data-models/src/constants'),
   os = require('os'),
   fs = require('mz/fs'),
   path = require('path'),
@@ -35,7 +36,10 @@ class Packager extends Service {
   async postHandler (req, res) {
     req.setTimeout(config.http.requestTimeoutSeconds * 1000)
 
-    const { rootId } = req.body
+    let { rootId, uuid } = req.body
+    if (uuid && !rootId) {
+      rootId = `${constants.BASE_URI}maps/${uuid}`
+    }
     let archivePath, outDir, mapResults
     const requestConfig = {
       headers: {
