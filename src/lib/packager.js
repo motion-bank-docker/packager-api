@@ -51,7 +51,7 @@ class Packager extends Service {
           files: [],
           cells: [],
           annotations: []
-        }, requestConfig)
+        }, requestConfig, api)
       }
       catch (err) {
         api.captureException(err)
