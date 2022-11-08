@@ -12,7 +12,7 @@ const
   } = require('./utils')
 
 const fetchMap = async function (id, results, requestConfig) {
-  if (results.maps.filter(map => map.id === id).length) return results
+  if (results.maps.filter(map => map.id === id).length || results.failedMaps.includes(id)) return results
   const linkedGrids = []
 
   let mapResult
@@ -22,6 +22,7 @@ const fetchMap = async function (id, results, requestConfig) {
   }
   catch (err) {
     console.error('Failed to get map for ID', id, err.message)
+    results.failedMaps.push(id)
     return results
   }
 

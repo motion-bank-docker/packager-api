@@ -49,6 +49,7 @@ class Packager extends Service {
         mapResults = await fetchMap(rootId, {
           metadata: {},
           maps: [],
+          failedMaps: [],
           files: [],
           cells: [],
           annotations: []
