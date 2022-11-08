@@ -19,7 +19,7 @@ const fetchMap = async function (id, results, requestConfig) {
     mapResult = await axios.get(`${config.api.apiHost}/maps/${parseURI(id).uuid}`, requestConfig)
   }
   catch (err) {
-    console.log('Failed to get map for ID', id)
+    console.error('Failed to get map for ID', id, err.message)
     this.api.captureException(err)
     return results
   }
@@ -32,7 +32,7 @@ const fetchMap = async function (id, results, requestConfig) {
       map.stylesheet.id = `statics/resources/files/${basename}`
     }
     catch (err) {
-      console.log('Failed to add grid stylesheet for URL', map.stylesheet.id)
+      console.error('Failed to add grid stylesheet for URL', map.stylesheet.id, err.message)
       this.api.captureException(err)
     }
   }
