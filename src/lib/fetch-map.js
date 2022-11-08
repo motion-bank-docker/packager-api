@@ -10,7 +10,7 @@ const
     optionalFetch
   } = require('./utils')
 
-const fetchMap = async function (id, results, requestConfig) {
+const fetchMap = async function (id, results, requestConfig, api) {
   if (results.maps.filter(map => map.id === id).length) return results
   const linkedGrids = []
 
@@ -39,7 +39,7 @@ const fetchMap = async function (id, results, requestConfig) {
 
   results.maps.push(map)
 
-  if (map.type.indexOf(constants.mapClasses.MAP_CLASS_GRID) === -1) {
+  if (!process.env.SKIP_MAP_CHECK && map.type.indexOf(constants.mapClasses.MAP_CLASS_GRID) === -1) {
     throw new TypeError('Map type not supported')
   }
 

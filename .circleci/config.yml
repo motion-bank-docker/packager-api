@@ -2,7 +2,7 @@ aliases:
   - &install-dependencies
     name: Install dependencies
     command: |
-      apk add --update --no-cache nodejs nodejs-npm python make g++ pkgconfig libsecret-dev
+      apk add --update --no-cache nodejs nodejs-npm python3 make g++ pkgconfig libsecret-dev
       npm config set unsafe-perm true
       npm i -g npm
       node --version
