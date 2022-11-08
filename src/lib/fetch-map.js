@@ -126,7 +126,7 @@ const fetchMap = async function (id, results, requestConfig) {
   for (let linkedId of linkedGrids) {
     const existing = results.maps.find(map => map.id === linkedId)
     if (!existing) {
-      console.log('--- fetchMap: linked map', map.id)
+      console.log('--- fetchMap: linked map', linkedId)
       results = await fetchMap(linkedId, results, requestConfig)
     }
   }
