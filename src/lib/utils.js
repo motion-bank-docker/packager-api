@@ -6,6 +6,7 @@ const
 
 const optionalFetch = async (url, requestConfig) => {
   try {
+    console.log('optionalFetch', url)
     const result = await axios.get(url, requestConfig)
     return result.data
   } catch (e) {

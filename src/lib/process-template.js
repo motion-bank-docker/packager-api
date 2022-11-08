@@ -13,6 +13,7 @@ const processTemplate = async function (outDir, rootId, entries, mapResults, arc
       dom.window.document.title = mapResults.maps.length ? mapResults.maps[0].title : 'MoSys Grid'
       dom.window.document.querySelector("meta[name=description]")
         .setAttribute('content', 'Published using MoSys by Motion Bank')
+      console.log('processTemplate: write')
       await fs.writeFile(path.join(outDir, entry), dom.serialize())
     }
     archive.addFile(path.join(outDir, entry), path.join(parseURI(rootId).uuid, entry))

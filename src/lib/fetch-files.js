@@ -25,6 +25,7 @@ const fetchFiles = async function (outDir, rootId, files, archive, requestConfig
       if (config.api.apiHost && file.indexOf(config.api.apiHost) === 0) {
         requestParams = Object.assign(requestParams, requestConfig)
       }
+      console.log('fetchFiles: fetch', file)
       const result = await axios(requestParams)
       result.data.pipe(output)
       await new Promise((resolve, reject) => {

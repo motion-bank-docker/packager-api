@@ -16,6 +16,7 @@ const fetchMap = async function (id, results, requestConfig) {
 
   let mapResult
   try {
+    console.log('Fetch map:', id)
     mapResult = await axios.get(`${config.api.apiHost}/maps/${parseURI(id).uuid}`, requestConfig)
   }
   catch (err) {
@@ -41,6 +42,7 @@ const fetchMap = async function (id, results, requestConfig) {
     throw new TypeError('Map type not supported')
   }
 
+  console.log('Fetch annotations for map:', map.id)
   const
     annotationsQuery = { 'target.id': map.id },
     annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
@@ -61,6 +63,7 @@ const fetchMap = async function (id, results, requestConfig) {
         $lte: endMillis
       }
     }
+    console.log('Fetch linked annotations for target id:', annotation.target.id)
     const annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
     for (const annotation of annotationsResult.data.items) {
       if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
@@ -69,10 +72,12 @@ const fetchMap = async function (id, results, requestConfig) {
 
   for (const annotation of results.annotations) {
     if (annotation.body.type === `${constants.BASE_URI_NS}cell.jsonld` && annotation.body.source.id) {
+      console.log('Fetch cell for source id:', annotation.body.source.id)
       const cellResult = await axios.get(`${config.api.apiHost}/cells/${parseURI(annotation.body.source.id).uuid}`, requestConfig)
       results.cells.push(cellResult.data)
     }
     else if (annotation.body.type === 'Video') {
+      console.log('Fetch video meta annotations for source id:', annotation.body.source.id)
       const
         metaQuery = { 'target.id': annotation.body.source.id },
         metaResults = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(metaQuery)}`, requestConfig)

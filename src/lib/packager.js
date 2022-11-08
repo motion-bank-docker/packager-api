@@ -45,6 +45,7 @@ class Packager extends Service {
       }
 
       try {
+        console.log('PACKAGER: fetchMap', rootId)
         mapResults = await fetchMap(rootId, {
           metadata: {},
           maps: [],
@@ -65,6 +66,7 @@ class Packager extends Service {
         let needsTemplateFetch = true
 
         if (needsTemplateFetch) {
+          console.log('PACKAGER: needsTemplateFetch')
           await this.minio.fGetObject(config.assets.packagesBucket, 'template.zip', path.join(os.tmpdir(), 'template.zip'))
         }
       }
@@ -74,11 +76,14 @@ class Packager extends Service {
       }
 
       try {
+        console.log('PACKAGER: extractTemplate')
         const templateEntries = await extractTemplate(path.join(os.tmpdir(), 'template.zip'), outDir)
 
         archivePath = `${outDir}.zip`
         const archive = new yazl.ZipFile()
+        console.log('PACKAGER: processTemplate')
         await processTemplate(outDir, rootId, templateEntries, mapResults, archive)
+        console.log('PACKAGER: storeData')
         await storeData(outDir, rootId, mapResults, archive, requestConfig)
         archive.end()
 
@@ -94,10 +99,12 @@ class Packager extends Service {
       }
 
       try {
+        console.log('PACKAGER: put package')
         await this.minio.fPutObject(config.assets.packagesBucket, `${parseURI(rootId).uuid}.zip`, archivePath, { 'Content-Type': 'application/zip' })
         await fs.unlink(archivePath)
         await fsx.remove(outDir)
 
+        console.log('PACKAGER: get presigned package URL')
         const url = await this.minio.presignedGetObject(config.assets.packagesBucket, `${parseURI(rootId).uuid}.zip`)
         send(res, 200, url)
       }
