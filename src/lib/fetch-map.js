@@ -10,7 +10,7 @@ const
     optionalFetch
   } = require('./utils')
 
-const fetchMap = async function (id, results, requestConfig, api) {
+const fetchMap = async function (id, results, requestConfig) {
   if (results.maps.filter(map => map.id === id).length) return results
   const linkedGrids = []
 
@@ -20,7 +20,6 @@ const fetchMap = async function (id, results, requestConfig, api) {
   }
   catch (err) {
     console.error('Failed to get map for ID', id, err.message)
-    this.api.captureException(err)
     return results
   }
 
@@ -33,7 +32,6 @@ const fetchMap = async function (id, results, requestConfig, api) {
     }
     catch (err) {
       console.error('Failed to add grid stylesheet for URL', map.stylesheet.id, err.message)
-      this.api.captureException(err)
     }
   }
 
