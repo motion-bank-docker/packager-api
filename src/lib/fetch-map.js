@@ -7,6 +7,7 @@ const
   {
     makeQuery,
     hasAnnotation,
+    hasCell,
     optionalFetch
   } = require('./utils')
 
@@ -16,7 +17,7 @@ const fetchMap = async function (id, results, requestConfig) {
 
   let mapResult
   try {
-    console.log('Fetch map:', id)
+    console.log('--- Fetch map:', id)
     mapResult = await axios.get(`${config.api.apiHost}/maps/${parseURI(id).uuid}`, requestConfig)
   }
   catch (err) {
@@ -74,7 +75,9 @@ const fetchMap = async function (id, results, requestConfig) {
     if (annotation.body.type === `${constants.BASE_URI_NS}cell.jsonld` && annotation.body.source.id) {
       console.log('Fetch cell for source id:', annotation.body.source.id)
       const cellResult = await axios.get(`${config.api.apiHost}/cells/${parseURI(annotation.body.source.id).uuid}`, requestConfig)
-      results.cells.push(cellResult.data)
+      if (cellResult.data && !hasCell(cellResult.data.id, results.cells)) {
+        results.cells.push(cellResult.data)
+      }
     }
     else if (annotation.body.type === 'Video') {
       console.log('Fetch video meta annotations for source id:', annotation.body.source.id)
@@ -95,13 +98,14 @@ const fetchMap = async function (id, results, requestConfig) {
         getGridUuid = /^.*\/mosys\/grids\/([a-f0-9\-]+).*/,
         gridUuid = cell.source._value.link.match(getGridUuid)
       if (gridUuid && gridUuid.length > 1 && gridUuid[1] !== parseURI(id).uuid) {
-        linkedGrids.push(`${constants.BASE_URI}maps/${gridUuid[1]}`)
+        const linkedGridId = `${constants.BASE_URI}maps/${gridUuid[1]}`
+        if (!linkedGrids.includes(linkedGridId)) linkedGrids.push(linkedGridId)
       }
     }
     if (cell.configuration._value.component === 'CellImage') {
       if (cell.source._value.content.indexOf('statics/resources/files/') !== 0) {
         const basename = path.basename(new URL(cell.source._value.content).pathname)
-        if (results.files.indexOf(cell.source._value.content) === -1) results.files.push(cell.source._value.content)
+        if (!results.files.includes(cell.source._value.content)) results.files.push(cell.source._value.content)
         cell.source._value.content = `statics/resources/files/${basename}`
         cell.source.value = JSON.stringify(cell.source._value)
       }
@@ -110,8 +114,10 @@ const fetchMap = async function (id, results, requestConfig) {
       if (cell.source._value.id.indexOf(`${constants.BASE_URI}annotations/`) === 0) {
         const data = await optionalFetch(`${config.api.apiHost}/annotations/${parseURI(cell.source._value.id).uuid}`, requestConfig)
         if (data) {
-          if (!hasAnnotation(data.id, results.annotations)) results.annotations.push(data)
-          await fetchLinkedAnnotations(data)
+          if (!hasAnnotation(data.id, results.annotations)) {
+            results.annotations.push(data)
+            await fetchLinkedAnnotations(data)
+          }
         }
       }
     }
@@ -120,6 +126,7 @@ const fetchMap = async function (id, results, requestConfig) {
   for (let linkedId of linkedGrids) {
     const existing = results.maps.find(map => map.id === linkedId)
     if (!existing) {
+      console.log('--- fetchMap: linked map', map.id)
       results = await fetchMap(linkedId, results, requestConfig)
     }
   }

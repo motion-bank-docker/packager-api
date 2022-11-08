@@ -2,7 +2,8 @@ const axios = require('axios')
 
 const
   makeQuery = query => encodeURIComponent(JSON.stringify(query)),
-  hasAnnotation = (id, annotations) => annotations.filter(a => a.id === id).length
+  hasAnnotation = (id, annotations) => annotations.filter(a => a.id === id).length,
+  hasCell = (id, cells) => cells.filter(c => c.id === id).length
 
 const optionalFetch = async (url, requestConfig) => {
   try {
@@ -17,5 +18,6 @@ const optionalFetch = async (url, requestConfig) => {
 module.exports = {
   makeQuery,
   hasAnnotation,
+  hasCell,
   optionalFetch
 }
