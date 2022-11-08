@@ -45,10 +45,15 @@ const fetchMap = async function (id, results, requestConfig) {
 
   console.log('Fetch annotations for map:', map.id)
   const
+    mapAnnotations = [],
     annotationsQuery = { 'target.id': map.id },
     annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
 
-  results.annotations = results.annotations.concat(annotationsResult.data.items)
+  for (const item of annotationsResult.data.items) {
+    if (!results.annotations.find(a => a.id === item.id)) {
+      mapAnnotations.push(item)
+    }
+  }
 
   async function fetchLinkedAnnotations (annotation) {
     // FIXME: Enable cell start and end config
@@ -67,11 +72,13 @@ const fetchMap = async function (id, results, requestConfig) {
     console.log('Fetch linked annotations for target id:', annotation.target.id)
     const annotationsResult = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(annotationsQuery)}`, requestConfig)
     for (const annotation of annotationsResult.data.items) {
-      if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
+      if (annotation && !hasAnnotation(annotation.id, results.annotations) && !hasAnnotation(annotation.id, mapAnnotations)) {
+        mapAnnotations.push(annotation)
+      }
     }
   }
 
-  for (const annotation of results.annotations) {
+  for (const annotation of mapAnnotations) {
     if (annotation.body.type === `${constants.BASE_URI_NS}cell.jsonld` && annotation.body.source.id) {
       console.log('Fetch cell for source id:', annotation.body.source.id)
       const cellResult = await axios.get(`${config.api.apiHost}/cells/${parseURI(annotation.body.source.id).uuid}`, requestConfig)
@@ -85,7 +92,9 @@ const fetchMap = async function (id, results, requestConfig) {
         metaQuery = { 'target.id': annotation.body.source.id },
         metaResults = await axios.get(`${config.api.apiHost}/annotations?query=${makeQuery(metaQuery)}`, requestConfig)
       for (const annotation of metaResults.data.items) {
-        if (annotation && !hasAnnotation(annotation.id, results.annotations)) results.annotations.push(annotation)
+        if (annotation && !hasAnnotation(annotation.id, results.annotations) && !hasAnnotation(annotation.id, mapAnnotations)) {
+          mapAnnotations.push(annotation)
+        }
       }
 
       await fetchLinkedAnnotations(annotation)
@@ -114,14 +123,16 @@ const fetchMap = async function (id, results, requestConfig) {
       if (cell.source._value.id.indexOf(`${constants.BASE_URI}annotations/`) === 0) {
         const data = await optionalFetch(`${config.api.apiHost}/annotations/${parseURI(cell.source._value.id).uuid}`, requestConfig)
         if (data) {
-          if (!hasAnnotation(data.id, results.annotations)) {
-            results.annotations.push(data)
+          if (!hasAnnotation(data.id, results.annotations) && !hasAnnotation(data.id, mapAnnotations)) {
+            mapAnnotations.push(data)
             await fetchLinkedAnnotations(data)
           }
         }
       }
     }
   }
+
+  results.annotations = results.annotations.concat(mapAnnotations)
 
   for (let linkedId of linkedGrids) {
     const existing = results.maps.find(map => map.id === linkedId)
